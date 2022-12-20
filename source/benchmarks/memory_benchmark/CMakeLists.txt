@@ -4,4 +4,4 @@
 # SPDX-License-Identifier: MIT
 #
 
-add_benchmark(memory_benchmark ocl l0 sycl all)
+add_benchmark(memory_benchmark ocl l0 sycl vk all)

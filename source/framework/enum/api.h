@@ -18,6 +18,7 @@ enum class Api {
     // Supported APIs
     OpenCL,
     L0,
+    Vulkan,
     SYCL,
 
     // Special values
@@ -34,6 +35,8 @@ inline std::string to_string(Api api) {
         return "ocl";
     case Api::L0:
         return "l0";
+    case Api::Vulkan:
+        return "vk";
     case Api::SYCL:
         return "sycl";
     default:
@@ -48,6 +51,8 @@ inline std::string getUserFriendlyApiName(Api api) {
         return "OpenCL";
     case Api::L0:
         return "LevelZero";
+    case Api::Vulkan:
+        return "Vulkan";
     case Api::SYCL:
         return "SYCL";
     default:
@@ -60,6 +65,8 @@ inline Api parseApi(const std::string &value) {
         return Api::OpenCL;
     } else if (value == "l0") {
         return Api::L0;
+    } else if (value == "vk") {
+        return Api::Vulkan;
     } else if (value == "all") {
         return Api::All;
     } else if (value == "sycl") {
@@ -73,6 +80,7 @@ inline bool validateApi(Api api) {
     switch (api) {
     case Api::OpenCL:
     case Api::L0:
+    case Api::Vulkan:
     case Api::SYCL:
         return true;
     default:
