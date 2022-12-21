@@ -19,6 +19,7 @@ struct QueueProperties {
     bool            requireCreationSuccess     = true;
     bool            profiling                  = false;
     bool            enableValidationLayer      = false;
+    bool            enableIncrementalPresent   = false;
     bool            enableDebugLayer           = false;
     bool            enableShaderDebugging      = false;
 

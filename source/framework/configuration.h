@@ -53,6 +53,9 @@ struct Configuration : ArgumentContainer {
     NonNegativeIntegerArgument l0DriverIndex;
     NonNegativeIntegerArgument l0DeviceIndex;
 
+    // VK params
+    NonNegativeIntegerArgument vkPhysicalDeviceIndex;
+
     // Api agnostic params
     StringArgument test;
     DeviceSelectionArgument subDeviceSelection;

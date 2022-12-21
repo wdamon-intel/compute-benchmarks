@@ -12,6 +12,8 @@
 #include "framework/vk/context_properties.h"
 #include "framework/vk/queue_properties.h"
 
+#include <vector>
+
 namespace VK {
 
 // Class handles regular Vulkan boilerplate code, such as creating instances, devices, contexts,
@@ -24,13 +26,33 @@ struct Vulkan {
     VkPhysicalDevice physicalDevice {};
     VkDevice         device         {};
     VkQueue          graphicsQueue  {};
-    //VkQueue computeQueue{};
-    //VkQueue presentQueue{};
+    VkQueue          computeQueue   {};
+    VkQueue          transferQueue  {};
+    VkQueue          presentQueue   {};
 
     Vulkan() : Vulkan(QueueProperties::create()) {}
     Vulkan(const QueueProperties &queueProperties) : Vulkan(queueProperties, ContextProperties::create()) {}
     Vulkan(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
     ~Vulkan();
+
+private:
+    enum class Limits : uint32_t
+    {
+        MAX_ENABLED_EXTENSIONS = 64
+    };
+
+    void _selectInstanceLayers(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+    void _selectInstanceExtensions(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+    void _createInstance(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+
+    void _selectPhysicalDevice(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+    void _selectDeviceExtensions(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+    void _selectQueueFamilies(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+    void _createDevice(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+
+    std::vector<const char*> enabledInstanceExtensions  {};
+    std::vector<const char*> enabledInstanceLayers      {};
+    std::vector<const char*> enabledDeviceExtensions    {};
 };
 
 } // namespace VK
