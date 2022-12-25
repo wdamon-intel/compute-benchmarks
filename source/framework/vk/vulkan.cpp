@@ -11,6 +11,7 @@
 #include <volk.h>
 
 #include "framework/vk/utility/error.h"
+#include "framework/vk/utility/vk_command_pool.h"
 
 #include <vector>
 
@@ -342,10 +343,22 @@ Vulkan::Vulkan(const QueueProperties &queueProperties, const ContextProperties &
 
     _createInstance(queueProperties, contextProperties);
     _createDevice(queueProperties, contextProperties);
+
+    vkGetDeviceQueue(device, 0, 0, &graphicsQueue);
+
+    _commandPool = std::make_unique<CommandPool>();
+    VK_SUCCESS_OR_ERROR(_commandPool->init(device, graphicsQueue, 3, 0, VK_COMMAND_BUFFER_LEVEL_PRIMARY), "VK::CommandPool::init: ");
 }
 
 Vulkan::~Vulkan()
 {
+    _commandPool.reset();
+
+    if (device != nullptr)
+    {
+        vkDestroyDevice(device, NULL);
+        device = nullptr;
+    }
     if (instance != nullptr)
     {
         vkDestroyInstance(instance, NULL);

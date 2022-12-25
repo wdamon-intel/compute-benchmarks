@@ -14,7 +14,11 @@
 
 #include <vector>
 
+#include <volk.h>
+
 namespace VK {
+
+class CommandPool;
 
 // Class handles regular Vulkan boilerplate code, such as creating instances, devices, contexts,
 // queues, etc...  It is configurable by the QueueProperties and ContextProperties objects,
@@ -49,10 +53,13 @@ private:
     void _selectDeviceExtensions(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
     void _selectQueueFamilies(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
     void _createDevice(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
+    void _createQueues(const QueueProperties &queueProperties, const ContextProperties &contextProperties);
 
     std::vector<const char*> enabledInstanceExtensions  {};
     std::vector<const char*> enabledInstanceLayers      {};
     std::vector<const char*> enabledDeviceExtensions    {};
+
+    std::unique_ptr<CommandPool> _commandPool           {};
 };
 
 } // namespace VK
