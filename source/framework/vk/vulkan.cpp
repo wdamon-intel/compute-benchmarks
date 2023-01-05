@@ -61,7 +61,8 @@ namespace VK {
 
 static void initializeVolk()
 {
-    static bool volkInitialized __attribute__((used)) = [](){
+    [[maybe_unused]]
+    static bool volkInitialized = [](){
         volkInitialize();
         return true;
     }();
@@ -187,9 +188,9 @@ void Vulkan::_createInstance(const QueueProperties &queueProperties, const Conte
     instanceCreateInfo.pNext                    = NULL;
     instanceCreateInfo.flags                    = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     instanceCreateInfo.pApplicationInfo         = &appInfo;
-    instanceCreateInfo.enabledLayerCount        = enabledInstanceLayers.size();
+    instanceCreateInfo.enabledLayerCount        = static_cast<uint32_t>(enabledInstanceLayers.size());
     instanceCreateInfo.ppEnabledLayerNames      = enabledInstanceLayers.data();
-    instanceCreateInfo.enabledExtensionCount    = enabledInstanceExtensions.size();
+    instanceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(enabledInstanceExtensions.size());
     instanceCreateInfo.ppEnabledExtensionNames  = enabledInstanceExtensions.data();
 
     VK_SUCCESS_OR_ERROR(vkCreateInstance(&instanceCreateInfo, NULL, &instance), "vkCreateInstance: ");
@@ -330,7 +331,7 @@ void Vulkan::_createDevice(const QueueProperties &queueProperties, const Context
     deviceCreateInfo.pQueueCreateInfos          = &deviceQueueCreateInfo;
     deviceCreateInfo.enabledLayerCount          = 0;
     deviceCreateInfo.ppEnabledLayerNames        = NULL;
-    deviceCreateInfo.enabledExtensionCount      = enabledDeviceExtensions.size();
+    deviceCreateInfo.enabledExtensionCount      = static_cast<uint32_t>(enabledDeviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames    = enabledDeviceExtensions.data();
     deviceCreateInfo.pEnabledFeatures           = NULL;
 

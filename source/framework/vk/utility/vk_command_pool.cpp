@@ -152,7 +152,7 @@ VkResult CommandPool::flushAll(bool waitForComplete)
     VkResult retVal = VK_SUCCESS;
     for (size_t cmdBufIndex = 0; cmdBufIndex < _commandBuffers.size(); ++cmdBufIndex)
     {
-        retVal = flush(cmdBufIndex, waitForComplete);
+        retVal = flush(static_cast<uint32_t>(cmdBufIndex), waitForComplete);
         if (retVal != VK_SUCCESS)
         {
             break;
