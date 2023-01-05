@@ -336,6 +336,8 @@ void Vulkan::_createDevice(const QueueProperties &queueProperties, const Context
     deviceCreateInfo.pEnabledFeatures           = NULL;
 
     VK_SUCCESS_OR_ERROR(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device), "vkCreateDevice: ");
+
+    volkLoadDevice(device);
 }
 
 Vulkan::Vulkan(const QueueProperties &queueProperties, const ContextProperties &contextProperties)
