@@ -58,6 +58,9 @@ static TestResult run(const CopyBufferArguments &arguments, Statistics &statisti
     ASSERT_VK_SUCCESS(vkCreateBuffer(vulkan.device, &srcBufCreateInfo, NULL, &srcBuf));
     ASSERT_VK_SUCCESS(vkCreateBuffer(vulkan.device, &dstBufCreateInfo, NULL, &dstBuf));
 
+    vkDestroyBuffer(vulkan.device, srcBuf, NULL);
+    vkDestroyBuffer(vulkan.device, dstBuf, NULL);
+
     return TestResult::NoImplementation;
 }
 
