@@ -6,9 +6,10 @@
  */
 
 #include "framework/vk/utility/vk_buffer.h"
+
+#include "framework/utility/buffer_contents_helper.h"
 #include "framework/vk/utility/error.h"
 #include "framework/vk/vulkan.h"
-#include "framework/utility/buffer_contents_helper.h"
 
 #include <volk.h>
 
@@ -27,14 +28,8 @@ static uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFil
     FATAL_ERROR(std::string("failed to find suitable memory type"));
 }
 
-Buffer::Buffer(Vulkan* vulkan, VkDeviceSize size, VkBufferUsageFlags usage, VkSharingMode sharingMode, VkMemoryPropertyFlags properties)
-    : _vulkan(vulkan)
-    , _buffer(nullptr)
-    , _memory(nullptr)
-    , _requestedSizeInBytes(size)
-    , _actualSizeInBytes(0)
-    , _stagingBuffer()
-{
+Buffer::Buffer(Vulkan *vulkan, VkDeviceSize size, VkBufferUsageFlags usage, VkSharingMode sharingMode, VkMemoryPropertyFlags properties)
+    : _vulkan(vulkan), _buffer(nullptr), _memory(nullptr), _requestedSizeInBytes(size), _actualSizeInBytes(0), _stagingBuffer() {
     VkBufferCreateInfo createInfo;
     createInfo.sType                    = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     createInfo.pNext                    = NULL;
@@ -99,10 +94,10 @@ void Buffer::unmap() {
     vkUnmapMemory(_vulkan->device, _memory);
 }
 
-VkResult Buffer::copyFrom(const Buffer& srcBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size, bool waitForComplete) {
-    uint32_t         cmdBufIdx   = 0;
+VkResult Buffer::copyFrom(const Buffer &srcBuffer, VkDeviceSize srcOffset, VkDeviceSize dstOffset, VkDeviceSize size, bool waitForComplete) {
+    uint32_t cmdBufIdx = 0;
     EndEncodingFlags cmdBufFlags = (waitForComplete ? EndEncodingFlags::FINISH : EndEncodingFlags::NONE);
-    VkCommandBuffer  cmdBuf      = _vulkan->commandBuffer(&cmdBufIdx);
+    VkCommandBuffer cmdBuf = _vulkan->commandBuffer(&cmdBufIdx);
 
     VkBufferCopy copyRegion;
     copyRegion.srcOffset = srcOffset;
@@ -119,8 +114,8 @@ VkResult Buffer::copyFrom(const Buffer& srcBuffer, VkDeviceSize srcOffset, VkDev
 VkResult Buffer::buildStagingBuffer(BufferContents contents) {
     _stagingBuffer = std::make_shared<Buffer>(_vulkan, _requestedSizeInBytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    uint8_t* data = nullptr;
-    VK_SUCCESS_OR_RETURN(_stagingBuffer->map(0, _requestedSizeInBytes, 0, reinterpret_cast<void**>(&data)));
+    uint8_t *data = nullptr;
+    VK_SUCCESS_OR_RETURN(_stagingBuffer->map(0, _requestedSizeInBytes, 0, reinterpret_cast<void **>(&data)));
     switch (contents) {
     case BufferContents::Random:
         BufferContentsHelper::fillWithRandomBytes(data, _requestedSizeInBytes);

@@ -5,11 +5,11 @@
  *
  */
 
-#include "framework/vk/vulkan.h"
-#include "framework/vk/utility/vk_buffer.h"
-#include "framework/vk/utility/error.h"
 #include "framework/test_case/register_test_case.h"
 #include "framework/utility/timer.h"
+#include "framework/vk/utility/error.h"
+#include "framework/vk/utility/vk_buffer.h"
+#include "framework/vk/vulkan.h"
 
 #include "definitions/copy_buffer.h"
 
