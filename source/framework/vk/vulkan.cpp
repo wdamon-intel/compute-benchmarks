@@ -13,8 +13,6 @@
 #include "framework/vk/utility/error.h"
 #include "framework/vk/utility/vk_command_pool.h"
 
-#include <vector>
-
 #if VULKAN_PRINT_QUEUE_PROPERTIES
 #include <string>
 #include <iostream>
@@ -347,10 +345,10 @@ Vulkan::Vulkan(const QueueProperties &queueProperties, const ContextProperties &
     _createInstance(queueProperties, contextProperties);
     _createDevice(queueProperties, contextProperties);
 
-    vkGetDeviceQueue(device, 0, 0, &graphicsQueue);
+    vkGetDeviceQueue(device, 0, 0, &_queues[static_cast<uint32_t>(QueueIndex::GRAPHICS)]);
 
     _commandPool = std::make_unique<CommandPool>();
-    VK_SUCCESS_OR_ERROR(_commandPool->init(device, graphicsQueue, 3, 0, VK_COMMAND_BUFFER_LEVEL_PRIMARY), "VK::CommandPool::init: ");
+    VK_SUCCESS_OR_ERROR(_commandPool->init(device, graphicsQueue(), 3, 0, VK_COMMAND_BUFFER_LEVEL_PRIMARY), "VK::CommandPool::init: ");
 }
 
 Vulkan::~Vulkan()
@@ -366,6 +364,39 @@ Vulkan::~Vulkan()
     {
         vkDestroyInstance(instance, NULL);
         instance = nullptr;
+    }
+}
+
+VkCommandBuffer Vulkan::commandBuffer(uint32_t *pIndex)
+{
+    static uint32_t index = 0;
+
+    if (VK_SUCCESS != _commandPool->beginPrimary(index, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)) {
+        VK_SUCCESS_OR_ERROR(_commandPool->flush(index, true), "could not auto-flush command buffer");
+        VK_SUCCESS_OR_ERROR(_commandPool->beginPrimary(index, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT), "could not start command buffer");
+    }
+
+    *pIndex = index;
+
+    index = (index + 1) % _commandPool->numCommandBuffers();
+
+    return _commandPool->commandBufferAt(*pIndex);
+}
+
+void Vulkan::endEncoding(uint32_t index, EndEncodingFlags flags)
+{
+    switch (flags)
+    {
+        case EndEncodingFlags::NONE:
+            // fallthrough
+
+        case EndEncodingFlags::FLUSH:
+            _commandPool->flush(index);
+            break;
+
+        case EndEncodingFlags::FINISH:
+            _commandPool->flush(index, true);
+            break;
     }
 }
 

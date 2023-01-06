@@ -18,7 +18,7 @@ CommandPool::~CommandPool()
 
 void CommandPool::destroy()
 {
-    _began = false;
+    _began = 0;
 
     if (_commandBuffers.size() > 0)
     {
@@ -77,11 +77,13 @@ VkResult CommandPool::beginPrimary(
     VkCommandBufferUsageFlags flags
 )
 {
-    VK_CHECK_PARAMETER_OR_RETURN((cmdBufIndex < _commandBuffers.size()), "invalid command buffer index");
+    const uint32_t cmdBufIndexBit = (1U << cmdBufIndex);
 
-    if (_began)
+    VK_CHECK_PARAMETER_OR_RETURN((cmdBufIndex < _commandBuffers.size()), "invalid command buffer index");
+    
+    if (0 != (_began & cmdBufIndexBit))
     {
-        return VK_SUCCESS;
+        return VK_ERROR_OUT_OF_POOL_MEMORY;
     }
 
     VkCommandBufferBeginInfo cbBeginInfo;
@@ -92,19 +94,21 @@ VkResult CommandPool::beginPrimary(
 
     VK_SUCCESS_OR_RETURN(vkBeginCommandBuffer(_commandBuffers[cmdBufIndex], &cbBeginInfo));
 
-    _began = true;
+    _began |= cmdBufIndexBit;
 
     return VK_SUCCESS;
 }
 
 VkResult CommandPool::end(uint32_t cmdBufIndex)
 {
-    VK_CHECK_PARAMETER_OR_RETURN((_began == true), "cannot end command buffer, begin must be called first");
+    const uint32_t cmdBufIndexBit = (1U << cmdBufIndex);
+
+    VK_CHECK_PARAMETER_OR_RETURN((0 != (_began & cmdBufIndexBit)), "cannot end command buffer, begin must be called first");
     VK_CHECK_PARAMETER_OR_RETURN((cmdBufIndex < _commandBuffers.size()), "invalid command buffer index");
 
     VK_SUCCESS_OR_RETURN(vkEndCommandBuffer(_commandBuffers[cmdBufIndex]));
 
-    _began = false;
+    _began &= ~(cmdBufIndexBit);
 
     return VK_SUCCESS;
 }

@@ -6,6 +6,7 @@
  */
 
 #include "framework/vk/vulkan.h"
+#include "framework/vk/utility/vk_buffer.h"
 #include "framework/vk/utility/error.h"
 #include "framework/test_case/register_test_case.h"
 #include "framework/utility/timer.h"
@@ -32,36 +33,23 @@ static TestResult run(const CopyBufferArguments &arguments, Statistics &statisti
     Timer timer;
 
     // Create buffers
-    VkBufferCreateInfo srcBufCreateInfo;
-    srcBufCreateInfo.sType                  = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    srcBufCreateInfo.pNext                  = NULL;
-    srcBufCreateInfo.flags                  = 0;
-    srcBufCreateInfo.size                   = arguments.size;
-    srcBufCreateInfo.usage                  = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    srcBufCreateInfo.sharingMode            = VK_SHARING_MODE_EXCLUSIVE;
-    srcBufCreateInfo.queueFamilyIndexCount  = 0;
-    srcBufCreateInfo.pQueueFamilyIndices    = NULL;
+    VK::Buffer srcBuffer(&vulkan, arguments.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VK::Buffer dstBuffer(&vulkan, arguments.size,                                    VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VkBufferCreateInfo dstBufCreateInfo;
-    dstBufCreateInfo.sType                  = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    dstBufCreateInfo.pNext                  = NULL;
-    dstBufCreateInfo.flags                  = 0;
-    dstBufCreateInfo.size                   = arguments.size;
-    dstBufCreateInfo.usage                  = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    dstBufCreateInfo.sharingMode            = VK_SHARING_MODE_EXCLUSIVE;
-    dstBufCreateInfo.queueFamilyIndexCount  = 0;
-    dstBufCreateInfo.pQueueFamilyIndices    = NULL;
-    
-    VkBuffer srcBuf;
-    VkBuffer dstBuf;
+    // Warmup
+    srcBuffer.fill(arguments.contents);
+    dstBuffer.fill(arguments.contents);
 
-    ASSERT_VK_SUCCESS(vkCreateBuffer(vulkan.device, &srcBufCreateInfo, NULL, &srcBuf));
-    ASSERT_VK_SUCCESS(vkCreateBuffer(vulkan.device, &dstBufCreateInfo, NULL, &dstBuf));
+    // Benchmark
+    for (auto i = 0u; i < arguments.iterations; ++i) {
+        timer.measureStart();
+        dstBuffer.copyFrom(srcBuffer, 0, 0, arguments.size, true);
+        timer.measureEnd();
 
-    vkDestroyBuffer(vulkan.device, srcBuf, NULL);
-    vkDestroyBuffer(vulkan.device, dstBuf, NULL);
+        statistics.pushValue(timer.get(), arguments.size, typeSelector.getUnit(), typeSelector.getType());
+    }
 
-    return TestResult::NoImplementation;
+    return TestResult::Success;
 }
 
 static RegisterTestCaseImplementation<CopyBuffer> registerTestCase(run, Api::Vulkan);

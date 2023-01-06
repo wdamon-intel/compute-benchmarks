@@ -11,6 +11,7 @@
 
 #include <volk.h>
 
+#include <atomic>
 #include <vector>
 
 namespace VK {
@@ -36,7 +37,6 @@ public:
         VkCommandBufferUsageFlags flags         = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
     );
 
-    VkResult end(uint32_t cmdBufIndex);
 
     VkResult flush(uint32_t cmdBufIndex, bool waitForComplete = false);
 
@@ -48,11 +48,14 @@ public:
     uint32_t               numCommandBuffers()             const;
 
 private:
+    VkResult end(uint32_t cmdBufIndex);
+
+private:
     VkDevice                     _device            { nullptr };
     VkQueue                      _queue             { nullptr };
     VkCommandPool                _commandPool       { nullptr };
     std::vector<VkCommandBuffer> _commandBuffers    {         };
-    bool                         _began             {  false  };
+    uint32_t                     _began             {    0    };
 };
 
 } // namespace VK
